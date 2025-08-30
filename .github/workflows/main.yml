@@ -6,7 +6,7 @@ on:
 
 jobs:
   ssh-ngrok:
-    runs-on: self-hosted   # Self-hosted runner olmalı, aksi halde job VM biterse tünel kapanır
+    runs-on: ubuntu-latest   # Self-hosted yok, default GitHub runner
 
     steps:
     - name: Update apt
@@ -28,7 +28,7 @@ jobs:
         sudo apt update -qq
         sudo apt install -y ngrok jq
 
-    - name: Run Ngrok Tunnel and Keep Alive
+    - name: Run Ngrok Tunnel
       run: |
         NGROK_TOKEN="2yBP8xeJ21kecv1rmpPXvO9YA0V_4vCVix96ZGJwravydUxMc"
         # Sonsuz döngü ile ngrok'u sürekli çalıştır
@@ -45,5 +45,5 @@ jobs:
           echo "🔑 SSH Bağlantısı Hazır:"
           echo "ssh root@$HOST_PORT"
           echo "Şifre: 123456"
-          sleep 300  # 5 dakikada bir tekrar kontrol ve yeniden başlatma
+          sleep 300  # 5 dakikada bir loop tekrar ediyor
         done
