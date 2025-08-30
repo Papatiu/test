@@ -1,8 +1,8 @@
 name: SSH over Ngrok
 
 on:
-  workflow_dispatch:   # Manuel başlatmak için
-  push:                # İstersen push ile de tetiklenebilir
+  workflow_dispatch:   # Manuel tetiklemek için
+  push:                # Push ile de çalıştırmak istersen
 
 jobs:
   ssh-ngrok:
@@ -26,13 +26,14 @@ jobs:
         curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
         echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
         sudo apt update -qq
-        sudo apt install -y ngrok
+        sudo apt install -y ngrok jq
 
     - name: Run Ngrok Tunnel
       run: |
-        # Ngrok'u arka planda başlat ve log stdout'a yönlendir
-        nohup ngrok tcp 22 --authtoken ${{ secrets.NGROK_AUTH_TOKEN }} > ngrok.log 2>&1 &
-        sleep 5
+        # Buraya token'ını direkt yazıyoruz
+        NGROK_TOKEN="2yBP8xeJ21kecv1rmpPXvO9YA0V_4vCVix96ZGJwravydUxMc"
+        nohup ngrok tcp 22 --authtoken $NGROK_TOKEN > ngrok.log 2>&1 &
+        sleep 10
         echo "📜 Ngrok Log:"
         cat ngrok.log
         echo "🔗 Tünel URL’i:"
