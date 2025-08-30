@@ -6,7 +6,7 @@ on:
 
 jobs:
   ssh-ngrok:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted   # Self-hosted runner olmalı, aksi halde job VM biterse tünel kapanır
 
     steps:
     - name: Update apt
@@ -28,21 +28,22 @@ jobs:
         sudo apt update -qq
         sudo apt install -y ngrok jq
 
-    - name: Run Ngrok Tunnel
+    - name: Run Ngrok Tunnel and Keep Alive
       run: |
-        # Buraya token'ını direkt yazıyoruz
         NGROK_TOKEN="2yBP8xeJ21kecv1rmpPXvO9YA0V_4vCVix96ZGJwravydUxMc"
-        nohup ngrok tcp 22 --authtoken $NGROK_TOKEN > ngrok.log 2>&1 &
-        sleep 10
-        echo "📜 Ngrok Log:"
-        cat ngrok.log
-        echo "🔗 Tünel URL’i:"
-        curl http://localhost:4040/api/tunnels
-
-    - name: Print SSH Command
-      run: |
-        NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
-        HOST_PORT=$(echo $NGROK_URL | sed 's/tcp:\/\///' | sed 's/:/ -p /')
-        echo "🔑 SSH Bağlantısı Hazır:"
-        echo "ssh root@$HOST_PORT"
-        echo "Şifre: 123456"
+        # Sonsuz döngü ile ngrok'u sürekli çalıştır
+        while true; do
+          echo "🔄 Ngrok tüneli başlatılıyor..."
+          nohup ngrok tcp 22 --authtoken $NGROK_TOKEN > ngrok.log 2>&1 &
+          sleep 10
+          echo "📜 Ngrok Log:"
+          cat ngrok.log
+          echo "🔗 Tünel URL’i:"
+          curl http://localhost:4040/api/tunnels
+          NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
+          HOST_PORT=$(echo $NGROK_URL | sed 's/tcp:\/\///' | sed 's/:/ -p /')
+          echo "🔑 SSH Bağlantısı Hazır:"
+          echo "ssh root@$HOST_PORT"
+          echo "Şifre: 123456"
+          sleep 300  # 5 dakikada bir tekrar kontrol ve yeniden başlatma
+        done
