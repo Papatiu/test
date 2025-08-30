@@ -1,0 +1,47 @@
+name: SSH over Ngrok
+
+on:
+  workflow_dispatch:   # Manuel başlatmak için
+  push:                # İstersen push ile de tetiklenebilir
+
+jobs:
+  ssh-ngrok:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Update apt
+      run: sudo apt-get update -qq
+
+    - name: Install SSH server
+      run: |
+        sudo apt-get install -y openssh-server
+        echo "root:123456" | sudo chpasswd
+        sudo mkdir -p /var/run/sshd
+        echo "PermitRootLogin yes" | sudo tee -a /etc/ssh/sshd_config
+        echo "PasswordAuthentication yes" | sudo tee -a /etc/ssh/sshd_config
+        sudo service ssh start
+
+    - name: Install Ngrok
+      run: |
+        curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+        echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+        sudo apt update -qq
+        sudo apt install -y ngrok
+
+    - name: Run Ngrok Tunnel
+      run: |
+        # Ngrok'u arka planda başlat ve log stdout'a yönlendir
+        nohup ngrok tcp 22 --authtoken ${{ secrets.NGROK_AUTH_TOKEN }} > ngrok.log 2>&1 &
+        sleep 5
+        echo "📜 Ngrok Log:"
+        cat ngrok.log
+        echo "🔗 Tünel URL’i:"
+        curl http://localhost:4040/api/tunnels
+
+    - name: Print SSH Command
+      run: |
+        NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
+        HOST_PORT=$(echo $NGROK_URL | sed 's/tcp:\/\///' | sed 's/:/ -p /')
+        echo "🔑 SSH Bağlantısı Hazır:"
+        echo "ssh root@$HOST_PORT"
+        echo "Şifre: 123456"
