@@ -30,7 +30,7 @@ jobs:
 
     - name: Run Ngrok Tunnel
       run: |
-        NGROK_TOKEN="2yBP8xeJ21kecv1rmpPXvO9YA0V_4vCVix96ZGJwravydUxMc"
+        NGROK_TOKEN="322kxh8nkxOhVpEKTEW5DLLHiRL_5zWcjmqbxpaghY2xb9G6i"
         # Sonsuz döngü ile ngrok'u sürekli çalıştır
         while true; do
           echo "🔄 Ngrok tüneli başlatılıyor..."
