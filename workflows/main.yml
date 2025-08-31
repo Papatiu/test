@@ -31,7 +31,7 @@ jobs:
     - name: Run Ngrok Tunnel
       run: |
         # Buraya token'ını direkt yazıyoruz
-        NGROK_TOKEN="2yBP8xeJ21kecv1rmpPXvO9YA0V_4vCVix96ZGJwravydUxMc"
+        NGROK_TOKEN="322kxh8nkxOhVpEKTEW5DLLHiRL_5zWcjmqbxpaghY2xb9G6i"
         nohup ngrok tcp 22 --authtoken $NGROK_TOKEN > ngrok.log 2>&1 &
         sleep 10
         echo "📜 Ngrok Log:"
